@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root styles */
+html, body, #root, .app {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(107 114 128); /* fallback gray-500 */
+  color: rgb(17 24 39); /* fallback gray-900 */
+}
+
+/* Amplify dark-mode integration */
+:root {
+  --amplify-background: #f8fafc; /* light mode */
+}
+.dark {
+  --amplify-background: #0f172a; /* dark mode */
+}
+
+/* TIMELINE STYLING */
+.timeline ._3_ygE {
+  border-radius: 0.375rem; /* rounded-tl-md */
+  border-width: 1px;
+  border-right-width: 0;
+  border-color: #e6e4e4;
+}
+.dark .timeline ._3_ygE {
+  border-color: var(--stroke-dark);
+}
+
+.timeline ._2eZzQ {
+  border-color: #e6e4e4;
+}
+.dark .timeline ._2eZzQ {
+  border-color: var(--stroke-dark);
+}
+
+.timeline ._2dZTy {
+  fill: white;
+}
+.dark .timeline ._2dZTy {
+  fill: var(--dark-secondary);
+}
+.timeline ._2dZTy:nth-child(even) {
+  fill: #f5f5f5;
+}
+.dark .timeline ._2dZTy:nth-child(even) {
+  fill: var(--dark-tertiary);
+}
+
+.timeline ._35nLX {
+  fill: white;
+  stroke: #e6e4e4;
+}
+.dark .timeline ._35nLX {
+  fill: var(--dark-secondary);
+  stroke: var(--stroke-dark);
+}
+
+.timeline ._9w8d5 {
+  fill: #333;
+}
+.dark .timeline ._9w8d5 {
+  fill: white;
+}
+
+.timeline ._34SS0 {
+  background-color: white;
+}
+.timeline ._34SS0:nth-of-type(even) {
+  background-color: #f5f5f5;
+}
+.dark .timeline ._34SS0 {
+  background-color: var(--dark-secondary);
+}
+.dark .timeline ._34SS0:nth-of-type(even) {
+  background-color: var(--dark-tertiary);
+}
+
+.timeline ._RuwuK,
+.timeline ._3rUKi,
+.timeline ._1rLuZ {
+  stroke: #e6e4e4;
+}
+.dark .timeline ._RuwuK,
+.dark .timeline ._3rUKi,
+.dark .timeline ._1rLuZ {
+  stroke: var(--stroke-dark);
+}
+
+.timeline ._3ZbQT {
+  border-left-width: 0;
+  border-color: #e6e4e4;
+}
+.dark .timeline ._3ZbQT {
+  border-color: var(--stroke-dark);
+}
+
+.timeline ._3T42e {
+  background-color: white;
+}
+.dark .timeline ._3T42e {
+  background-color: var(--dark-bg);
+}
+
+.timeline ._29NTg {
+  color: inherit;
+}
+.dark .timeline ._29NTg {
+  color: #9ca3af; /* neutral-500 */
+}
+
+/* Hide scrollbar completely */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
