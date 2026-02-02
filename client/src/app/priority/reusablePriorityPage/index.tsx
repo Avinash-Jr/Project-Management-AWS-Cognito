@@ -5,30 +5,18 @@ import Header from "@/components/Header";
 import ModalNewTask from "@/components/ModalNewTask";
 import TaskCard from "@/components/TaskCard";
 import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
-import {
-  Priority,
-  Task,
-  useGetAuthUserQuery,
-  useGetTasksByUserQuery,
-} from "@/state/api";
+import { Priority, Task, useGetTasksByUserQuery } from "@/state/api";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
 type Props = {
   priority: Priority;
+  userId: number; // ✅ pass userId from parent (no auth hook)
 };
 
 const columns: GridColDef[] = [
-  {
-    field: "title",
-    headerName: "Title",
-    width: 100,
-  },
-  {
-    field: "description",
-    headerName: "Description",
-    width: 200,
-  },
+  { field: "title", headerName: "Title", width: 100 },
+  { field: "description", headerName: "Description", width: 200 },
   {
     field: "status",
     headerName: "Status",
@@ -39,52 +27,30 @@ const columns: GridColDef[] = [
       </span>
     ),
   },
-  {
-    field: "priority",
-    headerName: "Priority",
-    width: 75,
-  },
-  {
-    field: "tags",
-    headerName: "Tags",
-    width: 130,
-  },
-  {
-    field: "startDate",
-    headerName: "Start Date",
-    width: 130,
-  },
-  {
-    field: "dueDate",
-    headerName: "Due Date",
-    width: 130,
-  },
+  { field: "priority", headerName: "Priority", width: 75 },
+  { field: "tags", headerName: "Tags", width: 130 },
+  { field: "startDate", headerName: "Start Date", width: 130 },
+  { field: "dueDate", headerName: "Due Date", width: 130 },
   {
     field: "author",
     headerName: "Author",
     width: 150,
-    renderCell: (params) => params.value.username || "Unknown",
+    valueGetter: (params) => params.row.author?.username || "Unknown",
   },
   {
     field: "assignee",
     headerName: "Assignee",
     width: 150,
-    renderCell: (params) => params.value.username || "Unassigned",
+    valueGetter: (params) => params.row.assignee?.username || "Unassigned",
   },
 ];
 
-const ReusablePriorityPage = ({ priority }: Props) => {
-  const [view, setView] = useState("list");
+const ReusablePriorityPage = ({ priority, userId }: Props) => {
+  const [view, setView] = useState<"list" | "table">("list");
   const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
 
-  const { data: currentUser } = useGetAuthUserQuery({});
-  const userId = currentUser?.userDetails?.userId ?? null;
-  const {
-    data: tasks,
-    isLoading,
-    isError: isTasksError,
-  } = useGetTasksByUserQuery(userId || 0, {
-    skip: userId === null,
+  const { data: tasks, isLoading, isError } = useGetTasksByUserQuery(userId, {
+    skip: !userId,
   });
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
@@ -93,7 +59,7 @@ const ReusablePriorityPage = ({ priority }: Props) => {
     (task: Task) => task.priority === priority,
   );
 
-  if (isTasksError || !tasks) return <div>Error fetching tasks</div>;
+  if (isError) return <div>Error fetching tasks</div>;
 
   return (
     <div className="m-5 p-4">
@@ -101,6 +67,7 @@ const ReusablePriorityPage = ({ priority }: Props) => {
         isOpen={isModalNewTaskOpen}
         onClose={() => setIsModalNewTaskOpen(false)}
       />
+
       <Header
         name="Priority Page"
         buttonComponent={
@@ -112,6 +79,7 @@ const ReusablePriorityPage = ({ priority }: Props) => {
           </button>
         }
       />
+
       <div className="mb-4 flex justify-start">
         <button
           className={`px-4 py-2 ${
@@ -124,12 +92,13 @@ const ReusablePriorityPage = ({ priority }: Props) => {
         <button
           className={`px-4 py-2 ${
             view === "table" ? "bg-gray-300" : "bg-white"
-          } rounded-l`}
+          } rounded-r`}
           onClick={() => setView("table")}
         >
           Table
         </button>
       </div>
+
       {isLoading ? (
         <div>Loading tasks...</div>
       ) : view === "list" ? (
@@ -139,14 +108,13 @@ const ReusablePriorityPage = ({ priority }: Props) => {
           ))}
         </div>
       ) : (
-        view === "table" &&
         filteredTasks && (
           <div className="z-0 w-full">
             <DataGrid
               rows={filteredTasks}
               columns={columns}
               checkboxSelection
-              getRowId={(row) => row.id}
+              getRowId={(row: Task) => row.id}
               className={dataGridClassNames}
               sx={dataGridSxStyles(isDarkMode)}
             />

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface initialStateTypes {
+  userId: any;
   isSidebarCollapsed: boolean;
   isDarkMode: boolean;
 }

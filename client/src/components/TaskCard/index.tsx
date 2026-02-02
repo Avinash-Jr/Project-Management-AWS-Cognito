@@ -1,6 +1,5 @@
 import { Task } from "@/state/api";
 import { format } from "date-fns";
-import Image from "next/image";
 import React from "react";
 
 type Props = {
@@ -13,19 +12,12 @@ const TaskCard = ({ task }: Props) => {
       {task.attachments && task.attachments.length > 0 && (
         <div>
           <strong>Attachments:</strong>
-          <div className="flex flex-wrap">
-            {task.attachments && task.attachments.length > 0 && (
-              <Image
-                src={`https://pm-s3-images.s3.us-east-2.amazonaws.com/${task.attachments[0].fileURL}`}
-                alt={task.attachments[0].fileName}
-                width={400}
-                height={200}
-                className="rounded-md"
-              />
-            )}
+          <div className="mt-2 flex h-[200px] items-center justify-center rounded-md bg-gray-100 text-sm text-gray-500 dark:bg-dark-tertiary">
+            Attachment
           </div>
         </div>
       )}
+
       <p>
         <strong>ID:</strong> {task.id}
       </p>

@@ -1,5 +1,4 @@
 import { User } from "@/state/api";
-import Image from "next/image";
 import React from "react";
 
 type Props = {
@@ -10,15 +9,11 @@ const UserCard = ({ user }: Props) => {
   return (
     <div className="flex items-center rounded border p-4 shadow">
       {user.profilePictureUrl && (
-        <Image
-          src={`https://pm-s3-images.s3.us-east-2.amazonaws.com/p1.jpeg`}
-          alt="profile picture"
-          width={32}
-          height={32}
-          className="rounded-full"
-        />
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-500 text-xs font-semibold text-white">
+          {user.username.charAt(0).toUpperCase()}
+        </div>
       )}
-      <div>
+      <div className="ml-3">
         <h3>{user.username}</h3>
         <p>{user.email}</p>
       </div>
