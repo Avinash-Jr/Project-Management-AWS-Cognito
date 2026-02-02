@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { use, useState, useMemo } from "react";
 import ProjectHeader from "@/app/projects/ProjectHeader";
 import Board from "../BoardView";
 import List from "../ListView";
@@ -12,34 +12,58 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
-const Project = ({ params }: Props) => {
-  const { id } = use(params);
+// Define valid tabs as a union type for better type safety
+type TabType = "Board" | "List" | "Timeline" | "Table";
 
-  const [activeTab, setActiveTab] = useState("Board");
+const Project = ({ params }: Props) => {
+  // Unwrap params using React.use()
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
+
+  const [activeTab, setActiveTab] = useState<TabType>("Board");
   const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
 
+  // Optimization: Memoize the view components to prevent unnecessary 
+  // re-instantiation during parent state changes (like modal toggles)
+  const renderContent = useMemo(() => {
+    const commonProps = { id, setIsModalNewTaskOpen };
+
+    switch (activeTab) {
+      case "Board":
+        return <Board {...commonProps} />;
+      case "List":
+        return <List {...commonProps} />;
+      case "Timeline":
+        return <Timeline {...commonProps} />;
+      case "Table":
+        return <Table {...commonProps} />;
+      default:
+        return null;
+    }
+  }, [activeTab, id]);
+
   return (
-    <div>
+    <div className="flex flex-col h-full w-full transition-all duration-300">
       <ModalNewTask
         isOpen={isModalNewTaskOpen}
         onClose={() => setIsModalNewTaskOpen(false)}
         id={id}
       />
 
-      <ProjectHeader activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Header section with consistent padding */}
+      <div className="px-6 pt-6">
+        <ProjectHeader 
+          activeTab={activeTab} 
+          setActiveTab={(tab) => setActiveTab(tab as TabType)} 
+        />
+      </div>
 
-      {activeTab === "Board" && (
-        <Board id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
-      )}
-      {activeTab === "List" && (
-        <List id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
-      )}
-      {activeTab === "Timeline" && (
-        <Timeline id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
-      )}
-      {activeTab === "Table" && (
-        <Table id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} />
-      )}
+      {/* Main Content Area with a subtle fade-in animation container */}
+      <main className="flex-1 overflow-auto p-6 animate-in fade-in duration-500">
+        <div className="h-full rounded-xl bg-white/50 dark:bg-dark-bg/50 backdrop-blur-sm border border-gray-100 dark:border-stroke-dark shadow-sm">
+          {renderContent}
+        </div>
+      </main>
     </div>
   );
 };

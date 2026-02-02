@@ -10,6 +10,7 @@ html, body, #root, .app {
   color: rgb(17 24 39); /* fallback gray-900 */
 }
 
+
 /* Amplify dark-mode integration */
 :root {
   --amplify-background: #f8fafc; /* light mode */

@@ -33,7 +33,8 @@ const taskColumns: GridColDef[] = [
   { field: "dueDate", headerName: "Due Date", width: 150 },
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+// Aesthetic Neon Colors for Charts
+const COLORS = ["#22d3ee", "#818cf8", "#fbbf24", "#f87171"];
 
 const HomePage = () => {
   const {
@@ -46,8 +47,8 @@ const HomePage = () => {
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  if (tasksLoading || isProjectsLoading) return <div>Loading..</div>;
-  if (tasksError || !tasks || !projects) return <div>Error fetching data</div>;
+  if (tasksLoading || isProjectsLoading) return <div className="p-8 text-cyan-400 animate-pulse uppercase tracking-widest">Initializing Dashboard...</div>;
+  if (tasksError || !tasks || !projects) return <div className="p-8 text-red-400">Error fetching system data</div>;
 
   const priorityCount = tasks.reduce(
     (acc: Record<string, number>, task: Task) => {
@@ -77,69 +78,96 @@ const HomePage = () => {
     count: statusCount[key],
   }));
 
-  const chartColors = isDarkMode
-    ? {
-        bar: "#8884d8",
-        barGrid: "#303030",
-        pieFill: "#4A90E2",
-        text: "#FFFFFF",
-      }
-    : {
-        bar: "#8884d8",
-        barGrid: "#E0E0E0",
-        pieFill: "#82ca9d",
-        text: "#000000",
-      };
+  // Chart colors tuned for holographic transparency
+  const chartColors = {
+    bar: "#22d3ee", // Cyan-400
+    barGrid: "rgba(255, 255, 255, 0.05)",
+    text: "rgba(255, 255, 255, 0.7)",
+    tooltipBg: "rgba(10, 25, 47, 0.9)",
+  };
+
+  const glassCardClass = "rounded-2xl border border-white/10 bg-[#050b14]/30 backdrop-blur-2xl p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-all duration-300 hover:border-white/20";
 
   return (
-    <div className="container h-full w-[100%] bg-gray-100 bg-transparent p-8">
+    <div className="container h-full w-full p-8 font-sans">
       <Header name="Project Management Dashboard" />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
-          <h3 className="mb-4 text-lg font-semibold dark:text-white">
+      
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Task Distribution Chart */}
+        <div className={glassCardClass}>
+          <h3 className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-cyan-400/80">
             Task Priority Distribution
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={taskDistribution}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={chartColors.barGrid}
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={chartColors.barGrid} />
+              <XAxis 
+                dataKey="name" 
+                stroke={chartColors.text} 
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
               />
-              <XAxis dataKey="name" stroke={chartColors.text} />
-              <YAxis stroke={chartColors.text} />
+              <YAxis 
+                stroke={chartColors.text} 
+                fontSize={12} 
+                tickLine={false}
+                axisLine={false}
+              />
               <Tooltip
+                cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
                 contentStyle={{
-                  width: "min-content",
-                  height: "min-content",
+                  backgroundColor: chartColors.tooltipBg,
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                  color: "#fff"
                 }}
               />
-              <Legend />
-              <Bar dataKey="count" fill={chartColors.bar} />
+              <Bar dataKey="count" fill={chartColors.bar} radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary">
-          <h3 className="mb-4 text-lg font-semibold dark:text-white">
+
+        {/* Project Status Pie Chart */}
+        <div className={glassCardClass}>
+          <h3 className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-purple-400/80">
             Project Status
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie dataKey="count" data={projectStatus} fill="#82ca9d" label>
+              <Pie 
+                dataKey="count" 
+                data={projectStatus} 
+                innerRadius={60} 
+                outerRadius={80} 
+                paddingAngle={8}
+                stroke="none"
+              >
                 {projectStatus.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}
+                    style={{ filter: `drop-shadow(0 0 8px ${COLORS[index % COLORS.length]}44)` }}
                   />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip 
+                 contentStyle={{
+                  backgroundColor: chartColors.tooltipBg,
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+              />
+              <Legend iconType="circle" wrapperStyle={{ paddingTop: "20px" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="rounded-lg bg-white p-4 shadow dark:bg-dark-secondary md:col-span-2">
-          <h3 className="mb-4 text-lg font-semibold dark:text-white">
-            Your Tasks
+
+        {/* Data Grid Section */}
+        <div className={`${glassCardClass} md:col-span-2 overflow-hidden`}>
+          <h3 className="mb-6 text-sm font-bold uppercase tracking-[0.2em] text-white/70">
+            Active Intelligence Tasks
           </h3>
           <div style={{ height: 400, width: "100%" }}>
             <DataGrid
@@ -150,7 +178,13 @@ const HomePage = () => {
               getRowClassName={() => "data-grid-row"}
               getCellClassName={() => "data-grid-cell"}
               className={dataGridClassNames}
-              sx={dataGridSxStyles(isDarkMode)}
+              sx={{
+                ...dataGridSxStyles(isDarkMode),
+                "& .MuiDataGrid-root": { border: "none" },
+                "& .MuiDataGrid-cell": { color: "rgba(255, 255, 255, 0.7)" },
+                "& .MuiDataGrid-columnHeaders": { backgroundColor: "rgba(255, 255, 255, 0.02)", color: "#22d3ee" },
+                "& .MuiDataGrid-row:hover": { backgroundColor: "rgba(255, 255, 255, 0.05) !important" },
+              }}
             />
           </div>
         </div>

@@ -1,8 +1,11 @@
+"use client";
+
 import { useAppSelector } from "@/app/redux";
 import { useGetTasksQuery } from "@/state/api";
 import { DisplayOption, Gantt, ViewMode } from "gantt-task-react";
 import "gantt-task-react/dist/index.css";
 import React, { useMemo, useState } from "react";
+import { Plus, Clock } from "lucide-react";
 
 type Props = {
   id: string;
@@ -24,73 +27,122 @@ const Timeline = ({ id, setIsModalNewTaskOpen }: Props) => {
     locale: "en-US",
   });
 
+  // --- OPTIMIZATION: Memoize and Validate Tasks ---
   const ganttTasks = useMemo(() => {
-    return (
-      tasks?.map((task) => ({
-        start: new Date(task.startDate as string),
-        end: new Date(task.dueDate as string),
-        name: task.title,
-        id: `Task-${task.id}`,
-        type: "task" as TaskTypeItems,
-        progress: task.points ? (task.points / 10) * 100 : 0,
-        isDisabled: false,
-      })) || []
-    );
-  }, [tasks]);
+    if (!tasks) return [];
 
-  const handleViewModeChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
+    return tasks
+      .filter((task) => task.startDate && task.dueDate) // Ensure dates exist
+      .map((task) => {
+        const start = new Date(task.startDate!);
+        const end = new Date(task.dueDate!);
+
+        // Gantt library safety: ensure end is at least 1 day after start if they are equal
+        if (start.getTime() === end.getTime()) {
+          end.setDate(end.getDate() + 1);
+        }
+
+        return {
+          start,
+          end,
+          name: task.title,
+          id: `Task-${task.id}`,
+          type: "task" as TaskTypeItems,
+          progress: task.points ? Math.min((task.points / 10) * 100, 100) : 0,
+          isDisabled: false,
+          styles: {
+            progressColor: isDarkMode ? "#1f2937" : "#aeb8c2",
+            progressSelectedColor: isDarkMode ? "#000" : "#9ba1a6",
+          },
+        };
+      });
+  }, [tasks, isDarkMode]);
+
+  const handleViewModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setDisplayOptions((prev) => ({
       ...prev,
       viewMode: event.target.value as ViewMode,
     }));
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !tasks) return <div>An error occurred while fetching tasks</div>;
+  if (isLoading) return <TimelineSkeleton />;
+  if (error || !tasks) return <TimelineError />;
 
   return (
-    <div className="px-4 xl:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-2 py-5">
-        <h1 className="me-2 text-lg font-bold dark:text-white">
-          Project Tasks Timeline
-        </h1>
-        <div className="relative inline-block w-64">
-          <select
-            className="focus:shadow-outline block w-full appearance-none rounded border border-gray-400 bg-white px-4 py-2 pr-8 leading-tight shadow hover:border-gray-500 focus:outline-none dark:border-dark-secondary dark:bg-dark-secondary dark:text-white"
-            value={displayOptions.viewMode}
-            onChange={handleViewModeChange}
+    <div className="max-w-full px-4 pb-8 xl:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 py-6">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30">
+            <Clock size={20} />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight dark:text-white">
+            Project Timeline
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <select
+              className="block w-40 cursor-pointer appearance-none rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium shadow-sm transition-all hover:border-gray-300 focus:outline-none dark:border-stroke-dark dark:bg-dark-secondary dark:text-white"
+              value={displayOptions.viewMode}
+              onChange={handleViewModeChange}
+            >
+              <option value={ViewMode.Day}>Day View</option>
+              <option value={ViewMode.Week}>Week View</option>
+              <option value={ViewMode.Month}>Month View</option>
+            </select>
+          </div>
+          
+          <button
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 active:scale-95"
+            onClick={() => setIsModalNewTaskOpen(true)}
           >
-            <option value={ViewMode.Day}>Day</option>
-            <option value={ViewMode.Week}>Week</option>
-            <option value={ViewMode.Month}>Month</option>
-          </select>
+            <Plus size={18} />
+            New Task
+          </button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md bg-white shadow dark:bg-dark-secondary dark:text-white">
-        <div className="timeline">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-stroke-dark dark:bg-dark-secondary">
+        <div className="gantt-container overflow-x-auto">
           <Gantt
             tasks={ganttTasks}
             {...displayOptions}
             columnWidth={displayOptions.viewMode === ViewMode.Month ? 150 : 100}
-            listCellWidth="100px"
-            barBackgroundColor={isDarkMode ? "#101214" : "#aeb8c2"}
-            barBackgroundSelectedColor={isDarkMode ? "#000" : "#9ba1a6"}
+            listCellWidth="150px"
+            barBackgroundColor={isDarkMode ? "#2563eb" : "#3b82f6"}
+            barBackgroundSelectedColor={isDarkMode ? "#1d4ed8" : "#2563eb"}
+            projectBackgroundColor={isDarkMode ? "#333" : "#eee"}
+            projectBackgroundSelectedColor={isDarkMode ? "#000" : "#ddd"}
+            milestoneBackgroundColor={isDarkMode ? "#f59e0b" : "#fbbf24"}
+            milestoneBackgroundSelectedColor={isDarkMode ? "#d97706" : "#f59e0b"}
+            fontSize="12px"
+            rowHeight={45}
+            barCornerRadius={6}
           />
-        </div>
-        <div className="px-4 pb-5 pt-1">
-          <button
-            className="flex items-center rounded bg-blue-primary px-3 py-2 text-white hover:bg-blue-600"
-            onClick={() => setIsModalNewTaskOpen(true)}
-          >
-            Add New Task
-          </button>
         </div>
       </div>
     </div>
   );
 };
+
+// --- Beautiful Fallbacks ---
+
+const TimelineSkeleton = () => (
+  <div className="px-4 xl:px-6 animate-pulse">
+    <div className="flex justify-between py-8">
+      <div className="h-8 w-48 rounded bg-gray-200 dark:bg-dark-tertiary" />
+      <div className="h-10 w-32 rounded bg-gray-200 dark:bg-dark-tertiary" />
+    </div>
+    <div className="h-96 w-full rounded-xl bg-gray-100 dark:bg-dark-tertiary/20" />
+  </div>
+);
+
+const TimelineError = () => (
+  <div className="flex h-96 flex-col items-center justify-center space-y-4 p-8">
+    <div className="rounded-full bg-red-100 p-4 text-red-600">!</div>
+    <p className="font-medium text-gray-600 dark:text-gray-400">An error occurred while fetching tasks.</p>
+  </div>
+);
 
 export default Timeline;

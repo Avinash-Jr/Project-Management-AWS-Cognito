@@ -9,7 +9,9 @@ import StoreProvider, { useAppSelector } from "./redux";
 /**
  * ClientOnly wrapper ensures dynamic content renders only on the client
  * Uses useLayoutEffect to avoid cascading setState warnings in React 18+
+ * 
  */
+
 const ClientOnly = ({ children }: { children: React.ReactNode }) => {
   const [mounted, setMounted] = React.useState(false);
 
@@ -22,9 +24,11 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
 };
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+  
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   ) ?? false; // fallback for SSR
+  
 
   const isDarkMode = useAppSelector(
     (state) => state.global.isDarkMode
@@ -38,6 +42,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
+  
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-gray-200">
