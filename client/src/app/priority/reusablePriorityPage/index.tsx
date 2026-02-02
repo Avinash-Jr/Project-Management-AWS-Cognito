@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useAppSelector } from "@/app/redux";
@@ -35,13 +36,14 @@ const columns: GridColDef[] = [
     field: "author",
     headerName: "Author",
     width: 150,
-    valueGetter: (params) => params.row.author?.username || "Unknown",
+    // Proper typing for MUI v6
+    valueGetter: (params: { row: Task }) => params.row.author?.username || "Unknown",
   },
   {
     field: "assignee",
     headerName: "Assignee",
     width: 150,
-    valueGetter: (params) => params.row.assignee?.username || "Unassigned",
+    valueGetter: (params: { row: Task }) => params.row.assignee?.username || "Unassigned",
   },
 ];
 
@@ -55,9 +57,7 @@ const ReusablePriorityPage = ({ priority, userId }: Props) => {
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  const filteredTasks = tasks?.filter(
-    (task: Task) => task.priority === priority,
-  );
+  const filteredTasks = tasks?.filter((task: Task) => task.priority === priority);
 
   if (isError) return <div>Error fetching tasks</div>;
 
@@ -82,17 +82,13 @@ const ReusablePriorityPage = ({ priority, userId }: Props) => {
 
       <div className="mb-4 flex justify-start">
         <button
-          className={`px-4 py-2 ${
-            view === "list" ? "bg-gray-300" : "bg-white"
-          } rounded-l`}
+          className={`px-4 py-2 ${view === "list" ? "bg-gray-300" : "bg-white"} rounded-l`}
           onClick={() => setView("list")}
         >
           List
         </button>
         <button
-          className={`px-4 py-2 ${
-            view === "table" ? "bg-gray-300" : "bg-white"
-          } rounded-r`}
+          className={`px-4 py-2 ${view === "table" ? "bg-gray-300" : "bg-white"} rounded-r`}
           onClick={() => setView("table")}
         >
           Table

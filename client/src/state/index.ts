@@ -1,14 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface initialStateTypes {
-  userId: any;
   isSidebarCollapsed: boolean;
   isDarkMode: boolean;
+  userId?: string | number | null; // Option 1: Make it optional
 }
 
 const initialState: initialStateTypes = {
   isSidebarCollapsed: false,
   isDarkMode: false,
+  userId: null, // Option 2: Or provide a default value here
 };
 
 export const globalSlice = createSlice({

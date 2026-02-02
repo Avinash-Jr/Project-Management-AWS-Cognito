@@ -6,7 +6,7 @@
 html, body, #root, .app {
   height: 100%;
   width: 100%;
-  background-color: rgb(107 114 128); /* fallback gray-500 */
+  background-color: rgb(158, 161, 168); /* fallback gray-500 */
   color: rgb(17 24 39); /* fallback gray-900 */
 }
 
